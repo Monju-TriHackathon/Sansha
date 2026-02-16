@@ -1,6 +1,7 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flaskr import models
 
 from . import main
 
@@ -25,6 +26,10 @@ def create_app():
 
     # データベースの初期化
     db.init_app(app)
+
+    # アプリケーションコンテキスト内でテーブルを作成
+    with app.app_context():
+        db.create_all()
 
     # アプリケーションのルートを定義
     app.register_blueprint(main.bp)
