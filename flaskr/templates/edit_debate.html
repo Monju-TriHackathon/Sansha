@@ -25,5 +25,8 @@
         <input type="submit" value="議論を更新">
         <a href="{{ url_for('debate.get_debate', debate_id=debate.debate_id) }}">キャンセル</a>
     </form>
+
+    <button id="delete-btn" data-debate-id="{{ debate.debate_id }}">削除</button>
+    <script src="{{ url_for('static', filename='js/debate_delete.js') }}"></script>
 </body>
 </html>
