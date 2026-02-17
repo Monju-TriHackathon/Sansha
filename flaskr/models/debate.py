@@ -42,5 +42,8 @@ class Debate(db.Model):
     comments = db.relationship('Comment', back_populates='debate', lazy=True)
     tags = db.relationship('Tag', secondary='debate_tags', back_populates='debates', lazy=True)
 
+    # 許可されるソート基準のセット
+    ALLOWED_SORT_COLUMNS = {'created_at', 'updated_at', 'current_number_of_votes'}
+
     def __repr__(self):
         return f'<Debate {self.title}>'
