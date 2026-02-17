@@ -356,9 +356,10 @@ def _build_debate(form, poster_id):
         if value is not None:
             setattr(debate, field, value)
 
-    # ターン制の場合、Challenger から発言開始
+    # ターン制の場合は初期状態をセット
     if debate.method == 0:
-        debate.current_speaker = 1
+        debate.current_speaker = 1 # Challenger が最初の発言者
+        debate.current_turn = 0
 
     return debate
 
@@ -367,7 +368,6 @@ def _ensure_aware(dt):
     if dt is not None and dt.tzinfo is None:
         return dt.replace(tzinfo=timezone.utc)
     return dt
-
 
 def _notify_both(debate, message):
     """議論の両参加者に通知を保存するヘルパー"""
