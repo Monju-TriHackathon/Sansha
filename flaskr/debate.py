@@ -303,8 +303,6 @@ def post_opinion(debate_id):
                 debate.current_speaker = 1  # 次は Challenger
                 debate.current_speaker_started_at = now
 
-        db.session.commit()
-
         # --- 通知保存 (相手に通知) ---
         opponent_id = debate.challenger_id if sender_id == debate.poster_id else debate.poster_id
         if opponent_id is not None:
@@ -313,7 +311,8 @@ def post_opinion(debate_id):
                 message=f'議論「{debate.title}」に新しい意見が投稿されました。',
             )
             db.session.add(notification)
-            db.session.commit()
+
+        db.session.commit()
 
         return jsonify({'status': 'success', 'message': '意見を投稿しました。'}), 201
 
