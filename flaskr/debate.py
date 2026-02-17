@@ -283,14 +283,14 @@ def post_opinion(debate_id):
             debate_id=debate_id,
             sender_id=sender_id,
             message=message,
-            turn_number=debate.current_turn if debate.method == 0 else None,
+            turn_number=debate.current_turn if debate.method == 1 else None,
         )
         db.session.add(exchange)
 
         # --- ターン更新 (ターン制のみ) ---
         if debate.method == 0:
             if debate.current_speaker == 1:  # Challenger が投稿した場合
-                debate.current_turn = (debate.current_turn or 0) + 1
+                debate.current_turn = (debate.current_turn or 1) + 1
                 debate.current_speaker = 0  # 次は Poster
                 debate.current_speaker_started_at = now
 
@@ -359,7 +359,7 @@ def _build_debate(form, poster_id):
     # ターン制の場合は初期状態をセット
     if debate.method == 0:
         debate.current_speaker = 1 # Challenger が最初の発言者
-        debate.current_turn = 0
+        debate.current_turn = 1
 
     return debate
 
