@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
@@ -14,8 +14,9 @@ def create_app():
     """
     app = Flask(__name__)
     app.config.from_mapping(
-        SQLALCHEMY_DATABASE_URI='sqlite:///database.db',
+        SQLALCHEMY_DATABASE_URI=f"sqlite:///{os.path.join(app.instance_path, 'database.db')}",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        SECRET_KEY='dev',  #セッション機能の使用
     )
 
     # インスタンスフォルダが存在しない場合は作成
@@ -26,8 +27,6 @@ def create_app():
 
     # アプリケーションコンテキスト内でテーブルを作成
     with app.app_context():
-        # ここでモデルをインポート（db初期化後）
-        from . import models
         db.create_all()
 
     # アプリケーションのルートを定義

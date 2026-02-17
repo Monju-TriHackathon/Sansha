@@ -2,6 +2,7 @@
 挑戦状への参加機能のサービスロジック
 """
 from datetime import datetime, timezone
+from flask import Blueprint, request, flash, redirect, url_for
 from flaskr import db
 from flaskr.models.user import User
 from flaskr.models.debate import Debate
@@ -12,24 +13,34 @@ class JoinChallengeError(Exception):
     """挑戦状参加時のエラー"""
     pass
 
-
-
-from flask import Blueprint, request, jsonify
-
 bp = Blueprint('join_challenge', __name__, url_prefix='/debates')
 
-@bp.route('/<int:debate_id>/join', methods=['POST'])
-def join_debate_route(debate_id):
+@bp.route('/join', methods=['POST'])
+def join_debate_route():
     try:
-        data = request.get_json()
+        # フォームまたはJSONからデータを取得
+        data = request.get_json() if request.is_json else request.form
+        debate_id = data.get('debate_id')
         challenger_id = data.get('challenger_id')
         
+        # IDが文字列で来る可能性があるのでint変換
+        if debate_id:
+            debate_id = int(debate_id)
+        if challenger_id:
+            challenger_id = int(challenger_id)
+            
         result = join_challenge(debate_id, challenger_id)
-        return jsonify(result), 200
+        
+        # フラッシュメッセージを設定してリダイレクト
+        flash(result['message'], 'success')
+        return redirect(url_for('index'))
+        
     except JoinChallengeError as e:
-        return jsonify({"successful": False, "message": str(e)}), 400
+        flash(str(e), 'error')
+        return redirect(url_for('index'))
     except Exception as e:
-        return jsonify({"successful": False, "message": f"エラー: {str(e)}"}), 500
+        flash(f"エラー: {str(e)}", 'error')
+        return redirect(url_for('index'))
 
 
 

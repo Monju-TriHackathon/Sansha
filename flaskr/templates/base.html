@@ -5,87 +5,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sansha - 挑戦管理</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1000px;
-            margin: 50px auto;
-            padding: 20px;
-        }
-
-        .container {
-            display: flex;
-            gap: 40px;
-        }
-
-        .section {
-            flex: 1;
-        }
-
-        .form-group {
-            margin: 20px 0;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        input,
-        select,
-        textarea {
-            padding: 8px;
-            width: 100%;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 14px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            margin-top: 10px;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        .result {
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            display: none;
-        }
-
-        .result.success {
-            background-color: #d4edda;
-            border-color: #c3e6cb;
-            color: #155724;
-        }
-
-        .result.error {
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
-            color: #721c24;
-        }
-
-        h2 {
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
-        }
-    </style>
 </head>
 
 <body>
@@ -95,69 +14,52 @@
     <div class="container">
 
         <!-- 挑戦状参加セクション -->
-        <div class="section">
+        <div>
             <h2>挑戦状に参加</h2>
 
-            <div class="form-group">
-                <label for="debate_id">挑戦状ID:</label>
-                <input type="number" id="debate_id" placeholder="例: 1" min="1">
-            </div>
-
-            <div class="form-group">
-                <label for="challenger_id">参加者ID:</label>
-                <input type="number" id="challenger_id" placeholder="例: 2" min="1">
-            </div>
-
-            <button onclick="joinChallenge()">参加する</button>
-
-            <div id="join_result" class="result">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            {% if category == 'success' %}
+            <div style="border: 1px solid black; padding: 10px; margin-bottom: 10px; background-color: #d4edda;">
                 <h3>結果</h3>
-                <pre id="join_result_content"></pre>
+                <p>{{ message }}</p>
             </div>
+            {% else %}
+            <div style="border: 1px solid black; padding: 10px; margin-bottom: 10px; background-color: #f8d7da;">
+                <h3>結果</h3>
+                <p>{{ message }}</p>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form action="/debates/join" method="POST">
+                <div>
+                    <label for="debate_id">挑戦状ID:</label>
+                    <input type="number" id="debate_id" name="debate_id" placeholder="例: 1" min="1" required>
+                </div>
+
+                <br>
+
+                <div>
+                    <label for="challenger_id">参加者ID:</label>
+                    <input type="number" id="challenger_id" name="challenger_id" placeholder="例: 2" min="1" required>
+                </div>
+
+                <br>
+
+                <button type="submit">参加する</button>
+            </form>
         </div>
     </div>
 
-    <script>
+</body>
 
-        function joinChallenge() {
-            const debate_id = document.getElementById('debate_id').value;
-            const challenger_id = document.getElementById('challenger_id').value;
+</html>      </div>
+    </div>
 
-            if (!debate_id || !challenger_id) {
-                alert('挑戦状IDと参加者IDを入力してください');
-                return;
-            }
-
-            const resultDiv = document.getElementById('join_result');
-            const resultContent = document.getElementById('join_result_content');
-
-            fetch(`/debates/${debate_id}/join`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    challenger_id: parseInt(challenger_id)
-                })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    resultDiv.style.display = 'block';
-                    resultContent.textContent = JSON.stringify(data, null, 2);
-
-                    if (data.successful) {
-                        resultDiv.className = 'result success';
-                    } else {
-                        resultDiv.className = 'result error';
-                    }
-                })
-                .catch(error => {
-                    resultDiv.style.display = 'block';
-                    resultDiv.className = 'result error';
-                    resultContent.textContent = `エラーが発生しました: ${error}`;
-                });
-        }
-    </script>
 </body>
 
 </html>
