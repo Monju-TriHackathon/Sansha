@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+  <h2>投票 | {{ debate.title }}</h2>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  {% for category, message in messages %}
+  <div>
+    <p>{{ message }}</p>
+  </div>
+  {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  <p>{{ debate.description }}</p>
+
+  <p>投稿者: {{ debate.poster.username if debate.poster else debate.poster_id }}</p>
+  <p>挑戦者: {{ debate.challenger.username if debate.challenger else debate.challenger_id }}</p>
+  <p>現在の投票数: {{ debate.current_number_of_votes }} / {{ debate.max_number_of_votes }}</p>
+
+  <h3>投票フォーム</h3>
+  <form action="{{ url_for('vote.submit_vote', debate_id=debate.debate_id) }}" method="POST">
+    <div>
+      <label>投票先:</label>
+      <br>
+      <input type="radio" id="vote_poster" name="voting_destination" value="0" required>
+      <label for="vote_poster">投稿者 ({{ debate.poster.username if debate.poster else debate.poster_id }})</label>
+      <br>
+      <input type="radio" id="vote_challenger" name="voting_destination" value="1">
+      <label for="vote_challenger">挑戦者 ({{ debate.challenger.username if debate.challenger else debate.challenger_id
+        }})</label>
+    </div>
+
+    <br>
+
+    <div>
+      <label for="comment">コメント:</label>
+      <br>
+      <textarea id="comment" name="comment" rows="4" cols="50" placeholder="コメントを入力してください" required></textarea>
+    </div>
+
+    <br>
+
+    <button type="submit">投票する</button>
+  </form>
+</body>
+
+</html>

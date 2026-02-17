@@ -43,10 +43,11 @@ def create_app(test_config=None):
         db.create_all()
 
     # アプリケーションのルートを定義
-    from flaskr import main, debate, auth, join_challenge
+    from flaskr import main, debate, vote, auth, join_challenge
 
     app.register_blueprint(main.bp)
     app.register_blueprint(debate.bp)
+    app.register_blueprint(vote.bp)
     app.register_blueprint(auth.bp)
     app.register_blueprint(join_challenge.bp)
 
