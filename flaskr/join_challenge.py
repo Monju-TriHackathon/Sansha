@@ -2,7 +2,8 @@
 挑戦状への参加機能のサービスロジック
 """
 from datetime import datetime, timezone
-from flask import Blueprint, request, flash, redirect, url_for, render_template
+from flask import Blueprint, request, flash, redirect, url_for
+from flask_login import login_required, current_user
 from flaskr import db
 from flaskr.models.user import User
 from flaskr.models.debate import Debate
@@ -15,43 +16,35 @@ class JoinChallengeError(Exception):
 
 bp = Blueprint('join_challenge', __name__, url_prefix='/join_challenge')
 
-@bp.route('/', methods=['GET'])
-def join_form():
-    return render_template('join_challenge.html')
 
 @bp.route('/', methods=['POST'])
+@login_required
 def join_debate_route():
     try:
-        # フォームまたはJSONからデータを取得
-        data = request.get_json() if request.is_json else request.form
-        debate_id = data.get('debate_id')
-        challenger_id = data.get('challenger_id')
-        
-        # 必須チェック
-        if not debate_id or not challenger_id:
-            flash("挑戦状IDと参加者IDは必須です", 'error')
-            return redirect(url_for('join_challenge.join_form'))
-        
-        # int変換（不正な値の場合はValueError）
+        debate_id = request.form.get('debate_id')
+
+        if not debate_id:
+            flash('挑戦状IDが指定されていません。', 'error')
+            return redirect(url_for('debate.get_debates'))
+
         try:
             debate_id = int(debate_id)
-            challenger_id = int(challenger_id)
         except ValueError:
-            flash("IDは数値で入力してください", 'error')
-            return redirect(url_for('join_challenge.join_form'))
-            
-        result = join_challenge(debate_id, challenger_id)
-        
+            flash('IDは数値で入力してください。', 'error')
+            return redirect(url_for('debate.get_debates'))
+
+        result = join_challenge(debate_id, current_user.user_id)
+
         # フラッシュメッセージを設定してリダイレクト
         flash(result['message'], 'success')
-        return redirect(url_for('join_challenge.join_form'))
-        
+        return redirect(url_for('debate.get_debate', debate_id=debate_id))
+
     except JoinChallengeError as e:
         flash(str(e), 'error')
-        return redirect(url_for('join_challenge.join_form'))
-    except Exception as e:
-        flash(f"エラー: {str(e)}", 'error')
-        return redirect(url_for('join_challenge.join_form'))
+        return redirect(url_for('debate.get_debates'))
+    except Exception:
+        flash('予期しないエラーが発生しました。', 'error')
+        return redirect(url_for('debate.get_debates'))
 
 
 
