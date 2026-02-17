@@ -1,8 +1,12 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
 
 db = SQLAlchemy()
+login_manager = LoginManager()
+login_manager.login_view = 'auth.login'
+login_manager.login_message = 'ログインが必要です'
 
 def create_app(test_config=None):
     """
@@ -25,6 +29,14 @@ def create_app(test_config=None):
     # データベースの初期化
     db.init_app(app)
 
+    # Flask-Loginの初期化
+    login_manager.init_app(app)
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        from flaskr.models.user import User
+        return User.query.get(int(user_id))
+
     # アプリケーションコンテキスト内でテーブルを作成
     with app.app_context():
         from flaskr import models # モデルをインポートしてテーブルを認識させる
@@ -35,5 +47,8 @@ def create_app(test_config=None):
 
     app.register_blueprint(main.bp)
     app.register_blueprint(debate.bp)
+
+    from flaskr import auth
+    app.register_blueprint(auth.bp)
 
     return app
