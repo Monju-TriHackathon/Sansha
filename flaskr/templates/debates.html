@@ -1,24 +1,26 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <title>議論一覧</title>
 </head>
+
 <body>
     <h1>議論一覧</h1>
 
     {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
     {% endwith %}
 
     <ul>
-    {% for debate in debates %}
+        {% for debate in debates %}
         <li>{{ debate.title }}</li>
         <li>{{ debate.description }}</li>
         <li>{{ debate.state }}</li>
@@ -26,8 +28,17 @@
         <li>{{ debate.challenger_id }}</li>
         <li>{{ debate.created_at }}</li>
         <li>{{ debate.updated_at }}</li>
+        {% if debate.state == 0 %}
+        <li>
+            <form action="{{ url_for('join_challenge.join_debate_route') }}" method="POST">
+                <input type="hidden" name="debate_id" value="{{ debate.debate_id }}">
+                <button type="submit">参加する</button>
+            </form>
+        </li>
+        {% endif %}
         <hr>
-    {% endfor %}
+        {% endfor %}
     </ul>
 </body>
+
 </html>
