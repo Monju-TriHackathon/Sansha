@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>議論一覧</title>
+</head>
+<body>
+    <h1>議論一覧</h1>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <ul>
+    {% for debate in debates %}
+        <li>{{ debate.title }}<li>
+        <li>{{ debate.description }}<li>
+        <li>{{ debate.state }}<li>
+        <li>{{ debate.poster_id }}<li>
+        <li>{{ debate.challenger_id }}<li>
+        <li>{{ debate.created_at }}<li>
+        <li>{{ debate.updated_at }}<li>
+        <hr>
+    {% endfor %}
+    </ul>
+</body>
+</html>
