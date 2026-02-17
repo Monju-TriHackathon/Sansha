@@ -44,6 +44,14 @@ def get_debates():
     # クエリを実行して議論のリストを取得
     debates = query.all()
 
+    # 状態の更新チェック
+    changed = False
+    for debate in debates:
+        if _update_debate_state(debate):
+            changed = True
+    if changed:
+        db.session.commit()
+
     return render_template('debates.html', debates=debates)
 
 @bp.route('/debates/<int:debate_id>', methods=['GET'])
@@ -58,6 +66,10 @@ def get_debate(debate_id):
         議論の詳細を含むHTMLページ
     """
     debate = Debate.query.get_or_404(debate_id)
+
+    # 状態の更新チェック
+    if _update_debate_state(debate):
+        db.session.commit()
 
     return render_template('debate_detail.html', debate=debate)
 
@@ -370,3 +382,69 @@ def _notify_both(debate, message):
                 message=message,
             )
             db.session.add(notification)
+
+def _update_debate_state(debate):
+    """議論の状態を時間経過に基づいて更新する。変更があれば True を返す。"""
+    now = datetime.now(timezone.utc)
+    changed = False
+
+    # open: 挑戦者待機期間を超過 -> closed (no_show, draw)
+    if debate.state == 0:
+        created = _ensure_aware(debate.created_at)
+        elapsed = (now - created).total_seconds() / 60
+        if elapsed > debate.challenger_waiting_period_minutes:
+            debate.state = 3
+            debate.outcome = 2  # draw
+            debate.finish_reason = 1  # no_show
+            _notify_both(debate, '挑戦者待機期間を超過したため、議論が終了しました。')
+            changed = True
+
+    # in_debate
+    elif debate.state == 1:
+        # 議論期間を超過 -> voting
+        if debate.debate_start_time is not None:
+            elapsed = (now - _ensure_aware(debate.debate_start_time)).total_seconds() / 60
+            if elapsed > debate.debate_period_minutes:
+                debate.state = 2  # voting
+                debate.voting_start_time = now
+                _notify_both(debate, '議論期間が終了しました。投票期間に移行します。')
+                changed = True
+
+        # ターン制: 発言時間制限を超過 -> closed (time_out)
+        if debate.state == 1 and debate.method == 0:
+            if debate.current_speaker_started_at is not None and debate.turn_time_limit_minutes is not None:
+                turn_elapsed = (now - _ensure_aware(debate.current_speaker_started_at)).total_seconds() / 60
+                if turn_elapsed > debate.turn_time_limit_minutes:
+                    debate.state = 3  # closed
+                    debate.finish_reason = 2  # time_out
+                    if debate.current_speaker == 0:
+                        debate.outcome = 1  # challenger_win
+                    else:
+                        debate.outcome = 0  # poster_win
+                    _notify_both(debate, '発言時間制限を超過したため、議論が終了しました。')
+                    changed = True
+
+    # voting: 投票期間を超過 -> closed (normal, 勝敗判定)
+    elif debate.state == 2:
+        if debate.voting_start_time is not None:
+            elapsed = (now - _ensure_aware(debate.voting_start_time)).total_seconds() / 60
+            if elapsed > debate.voting_period_minutes:
+                debate.state = 3  # closed
+                debate.finish_reason = 0  # normal
+                debate.outcome = _judge_outcome(debate)
+                _notify_both(debate, '投票期間が終了しました。議論が終了しました。')
+                changed = True
+
+    return changed
+
+
+def _judge_outcome(debate):
+    """投票結果から勝敗を判定する。poster_win(0)/challenger_win(1)/draw(2)"""
+    poster_votes = sum(1 for v in debate.votes if v.voting_destination == 0)
+    challenger_votes = sum(1 for v in debate.votes if v.voting_destination == 1)
+    if poster_votes > challenger_votes:
+        return 0
+    elif challenger_votes > poster_votes:
+        return 1
+    else:
+        return 2
