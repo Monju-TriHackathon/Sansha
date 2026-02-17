@@ -31,7 +31,7 @@ def create_app():
         db.create_all()
 
     # アプリケーションのルートを定義
-    from .models.join_challenge import bp as join_challenge_bp
+    from .join_challenge import bp as join_challenge_bp
     app.register_blueprint(join_challenge_bp)
 
     @app.route('/')

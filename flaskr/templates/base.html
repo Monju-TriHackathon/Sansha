@@ -93,70 +93,6 @@
 
 
     <div class="container">
-        <!-- 挑戦状作成セクション -->
-        <div class="section">
-            <h2>挑戦状を作成</h2>
-
-            <div class="form-group">
-                <label for="poster_id">投稿者ID:</label>
-                <input type="number" id="poster_id" placeholder="例: 1" min="1">
-            </div>
-
-            <div class="form-group">
-                <label for="title">議題タイトル:</label>
-                <input type="text" id="title" placeholder="例: AIは人間を超えるか">
-            </div>
-
-            <div class="form-group">
-                <label for="description">議題説明:</label>
-                <textarea id="description" placeholder="議題の詳しい説明を入力してください"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="method">議論方法:</label>
-                <select id="method">
-                    <option value="0">ターン制</option>
-                    <option value="1">リアルタイム</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="max_number_of_votes">最大投票数:</label>
-                <input type="number" id="max_number_of_votes" value="100" min="1">
-            </div>
-
-            <div class="form-group">
-                <label for="challenger_waiting_period_minutes">挑戦者待機時間（分）:</label>
-                <input type="number" id="challenger_waiting_period_minutes" value="60" min="1">
-            </div>
-
-            <div class="form-group">
-                <label for="debate_period_minutes">議論期間（分）:</label>
-                <input type="number" id="debate_period_minutes" value="120" min="1">
-            </div>
-
-            <div class="form-group">
-                <label for="voting_period_minutes">投票期間（分）:</label>
-                <input type="number" id="voting_period_minutes" value="60" min="1">
-            </div>
-
-            <div class="form-group">
-                <label for="max_turns">最大ターン数（ターン制の場合）:</label>
-                <input type="number" id="max_turns" value="5" min="1">
-            </div>
-
-            <div class="form-group">
-                <label for="turn_time_limit_minutes">ターン時間制限（分、ターン制の場合）:</label>
-                <input type="number" id="turn_time_limit_minutes" value="30" min="1">
-            </div>
-
-            <button onclick="createDebate()">挑戦状を作成する</button>
-
-            <div id="create_result" class="result">
-                <h3>結果</h3>
-                <pre id="create_result_content"></pre>
-            </div>
-        </div>
 
         <!-- 挑戦状参加セクション -->
         <div class="section">
@@ -182,61 +118,6 @@
     </div>
 
     <script>
-        function createDebate() {
-            const poster_id = document.getElementById('poster_id').value;
-            const title = document.getElementById('title').value;
-            const description = document.getElementById('description').value;
-            const method = document.getElementById('method').value;
-            const max_number_of_votes = document.getElementById('max_number_of_votes').value;
-            const challenger_waiting_period_minutes = document.getElementById('challenger_waiting_period_minutes').value;
-            const debate_period_minutes = document.getElementById('debate_period_minutes').value;
-            const voting_period_minutes = document.getElementById('voting_period_minutes').value;
-            const max_turns = document.getElementById('max_turns').value;
-            const turn_time_limit_minutes = document.getElementById('turn_time_limit_minutes').value;
-
-            if (!poster_id || !title || !description) {
-                alert('投稿者ID、タイトル、説明を入力してください');
-                return;
-            }
-
-            const resultDiv = document.getElementById('create_result');
-            const resultContent = document.getElementById('create_result_content');
-
-            fetch('/debates/create', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    poster_id: parseInt(poster_id),
-                    title: title,
-                    description: description,
-                    method: parseInt(method),
-                    max_number_of_votes: parseInt(max_number_of_votes),
-                    challenger_waiting_period_minutes: parseInt(challenger_waiting_period_minutes),
-                    debate_period_minutes: parseInt(debate_period_minutes),
-                    voting_period_minutes: parseInt(voting_period_minutes),
-                    max_turns: parseInt(max_turns),
-                    turn_time_limit_minutes: parseInt(turn_time_limit_minutes)
-                })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    resultDiv.style.display = 'block';
-                    resultContent.textContent = JSON.stringify(data, null, 2);
-
-                    if (data.successful) {
-                        resultDiv.className = 'result success';
-                    } else {
-                        resultDiv.className = 'result error';
-                    }
-                })
-                .catch(error => {
-                    resultDiv.style.display = 'block';
-                    resultDiv.className = 'result error';
-                    resultContent.textContent = `エラーが発生しました: ${error}`;
-                });
-        }
 
         function joinChallenge() {
             const debate_id = document.getElementById('debate_id').value;

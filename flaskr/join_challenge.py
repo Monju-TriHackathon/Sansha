@@ -18,28 +18,6 @@ from flask import Blueprint, request, jsonify
 
 bp = Blueprint('join_challenge', __name__, url_prefix='/debates')
 
-@bp.route('/create', methods=['POST'])
-def create_debate_route():
-    try:
-        data = request.get_json()
-        result = create_debate(
-            poster_id=data.get('poster_id'),
-            title=data.get('title'),
-            description=data.get('description'),
-            method=data.get('method', 0),
-            max_number_of_votes=data.get('max_number_of_votes'),
-            challenger_waiting_period_minutes=data.get('challenger_waiting_period_minutes'),
-            debate_period_minutes=data.get('debate_period_minutes'),
-            voting_period_minutes=data.get('voting_period_minutes'),
-            max_turns=data.get('max_turns'),
-            turn_time_limit_minutes=data.get('turn_time_limit_minutes')
-        )
-        return jsonify(result), 201
-    except JoinChallengeError as e:
-        return jsonify({"successful": False, "message": str(e)}), 400
-    except Exception as e:
-        return jsonify({"successful": False, "message": f"エラー: {str(e)}"}), 500
-
 @bp.route('/<int:debate_id>/join', methods=['POST'])
 def join_debate_route(debate_id):
     try:
@@ -54,72 +32,6 @@ def join_debate_route(debate_id):
         return jsonify({"successful": False, "message": f"エラー: {str(e)}"}), 500
 
 
-def create_debate(poster_id: int, title: str, description: str, method: int, 
-                 max_number_of_votes: int, challenger_waiting_period_minutes: int,
-                 debate_period_minutes: int, voting_period_minutes: int,
-                 max_turns: int = None, turn_time_limit_minutes: int = None) -> dict:
-    """
-    挑戦状を作成
-    
-    Args:
-        poster_id: 投稿者ID
-        title: 議題タイトル
-        description: 議題説明
-        method: 議論方法 (turn(0)/realtime(1))
-        max_number_of_votes: 最大投票数
-        challenger_waiting_period_minutes: 挑戦者待機時間（分）
-        debate_period_minutes: 議論期間（分）
-        voting_period_minutes: 投票期間（分）
-        max_turns: 最大ターン数（method=0の場合）
-        turn_time_limit_minutes: ターン時間制限（分、method=0の場合）
-    
-    Returns:
-        dict: 作成結果
-    """
-    try:
-        # ユーザーが存在するか確認
-        poster = db.session.query(User).filter_by(user_id=poster_id).first()
-        if not poster:
-            raise JoinChallengeError("投稿者が見つかりません")
-        
-        # 新しい挑戦状を作成
-        now = datetime.now(timezone.utc)
-        debate = Debate(
-            poster_id=poster_id,
-            title=title,
-            description=description,
-            state=0,  # open
-            method=method,
-            max_number_of_votes=max_number_of_votes,
-            challenger_waiting_period_minutes=challenger_waiting_period_minutes,
-            debate_period_minutes=debate_period_minutes,
-            voting_period_minutes=voting_period_minutes,
-            max_turns=max_turns if method == 0 else None,
-            turn_time_limit_minutes=turn_time_limit_minutes if method == 0 else None,
-            created_at=now,
-            updated_at=now
-        )
-        
-        db.session.add(debate)
-        db.session.commit()
-        
-        return {
-            "successful": True,
-            "debate_id": debate.debate_id,
-            "message": "挑戦状を作成しました",
-            "debate": {
-                "debate_id": debate.debate_id,
-                "title": debate.title,
-                "state": debate.state,
-                "poster_id": debate.poster_id
-            }
-        }
-    
-    except JoinChallengeError:
-        raise
-    except Exception as e:
-        db.session.rollback()
-        raise JoinChallengeError(f"挑戦状作成エラー: {str(e)}")
 
 
 def join_challenge(debate_id: int, challenger_id: int) -> dict:
