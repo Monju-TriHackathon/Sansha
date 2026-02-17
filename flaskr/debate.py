@@ -127,6 +127,11 @@ def edit_debate(debate_id):
     # データベースから議論を取得
     debate = Debate.query.get_or_404(debate_id)
 
+    # 投稿者以外は編集不可
+    if debate.poster_id != poster_id:
+        flash('この議論の投稿者のみが編集できます。', 'error')
+        return redirect(url_for('debate.get_debate', debate_id=debate.debate_id)), 403
+
     if request.method == 'POST':
         title = request.form.get('title', default=None, type=str)
         description = request.form.get('description', default=None, type=str)
@@ -139,20 +144,14 @@ def edit_debate(debate_id):
             flash('タイトルと説明は必須です。', 'error')
             return render_template('edit_debate.html', debate=debate), 400
 
+        # 議論がすでに開始されている場合は編集を許可しない
+        if debate.state != 0:  # state 0: open, 1: in_debate, 2: voting, 3: closed
+            flash('この議論はすでに開始されているため、編集できません。', 'error')
+            return redirect(url_for('debate.get_debate', debate_id=debate.debate_id)), 400
+
         # データベースの議論を更新
         debate.title = title
         debate.description = description
-
-        # 編集が許可されているかを確認
-        # 例: 議論がすでに開始されている場合は編集を許可しない
-        if debate.state != 0:  # stateが0（open）以外の場合は編集を許可しない
-            db.session.rollback()  # 更新操作をロールバック
-            flash('この議論はすでに開始されているため、編集できません。', 'error')
-            return redirect(url_for('debate.get_debate', debate_id=debate.debate_id)), 400
-        elif debate.poster_id != poster_id:
-            db.session.rollback()  # 更新操作をロールバック
-            flash('この議論の投稿者のみが編集できます。', 'error')
-            return redirect(url_for('debate.get_debate', debate_id=debate.debate_id)), 403
 
         try:
             db.session.commit()
@@ -184,15 +183,13 @@ def delete_debate(debate_id):
     debate = Debate.query.get_or_404(debate_id)
 
     # 削除が許可されているかを確認
-    # 例: 議論がすでに開始されている場合は削除を許可しない
-    if debate.state != 0:  # stateが0（open）以外の場合は削除を許可しない
-        db.session.rollback()  # 削除操作をロールバック
-        flash('この議論はすでに開始されているため、削除できません。', 'error')
-        return redirect(url_for('debate.get_debate', debate_id=debate.debate_id)), 400
-    elif debate.poster_id != poster_id:
-        db.session.rollback()  # 削除操作をロールバック
+    if debate.poster_id != poster_id: # 投稿者以外は削除不可
         flash('この議論の投稿者のみが削除できます。', 'error')
         return redirect(url_for('debate.get_debate', debate_id=debate.debate_id)), 403
+
+    if debate.state != 0:  # stateが0（open）以外の場合は削除を許可しない
+        flash('この議論はすでに開始されているため、削除できません。', 'error')
+        return redirect(url_for('debate.get_debate', debate_id=debate.debate_id)), 400
 
     try:
         db.session.delete(debate)
