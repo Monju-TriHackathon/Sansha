@@ -3,12 +3,13 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
+
 db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 login_manager.login_message = 'ログインが必要です'
 
-def create_app(test_config=None):
+def create_app():
     """
     Flask アプリケーションを作成
 
@@ -39,16 +40,17 @@ def create_app(test_config=None):
 
     # アプリケーションコンテキスト内でテーブルを作成
     with app.app_context():
-        from flaskr import models # モデルをインポートしてテーブルを認識させる
+        from flaskr import models
         db.create_all()
 
     # アプリケーションのルートを定義
-    from flaskr import main, debate
-
+    from flaskr import main
     app.register_blueprint(main.bp)
-    app.register_blueprint(debate.bp)
 
     from flaskr import auth
     app.register_blueprint(auth.bp)
+
+    from flaskr import user
+    app.register_blueprint(user.bp)
 
     return app
