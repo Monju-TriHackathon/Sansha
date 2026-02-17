@@ -1,19 +1,25 @@
-{% extends "base.html" %}
-{% block content %}
-    <h2>プロフィール編集</h2>
-    <form method="post">
-        <label for="username">ユーザー名</label>
-        <input name="username" id="username" value="{{ user.username }}" required>
+<!doctype html>
+<html lang="jp">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+        <h2>プロフィール編集</h2>
+        <form method="post">
+            <label for="username">ユーザー名</label>
+            <input name="username" id="username" value="{{ user.username }}" required>
 
-        <label for="mailaddress">メールアドレス</label>
-        <input type="email" name="mailaddress" id="mailaddress" value="{{ user.mailaddress }}" required>
+            <label for="mailaddress">メールアドレス</label>
+            <input type="email" name="mailaddress" id="mailaddress" value="{{ user.mailaddress }}" required>
 
-        <label for="profile">プロフィール</label>
-        <textarea name="profile" id="profile">{{ user.profile or '' }}</textarea>
+            <label for="profile">プロフィール</label>
+            <textarea name="profile" id="profile">{{ user.profile or '' }}</textarea>
 
-        <label for="password">新しいパスワード（変更する場合のみ）</label>
-        <input type="password" name="password" id="password">
+            <label for="password">新しいパスワード（変更する場合のみ）</label>
+            <input type="password" name="password" id="password">
 
-        <input type="submit" value="更新">
-    </form>
-{% endblock %}
+            <input type="submit" value="更新">
+        </form>
+    </body>
+</html>
