@@ -47,7 +47,7 @@ def create_app(test_config=None):
 
     app.register_blueprint(main.bp)
     app.register_blueprint(debate.bp)
-    app.register_blueprint(auth.bp
+    app.register_blueprint(auth.bp)
     app.register_blueprint(join_challenge.bp)
 
     return app
