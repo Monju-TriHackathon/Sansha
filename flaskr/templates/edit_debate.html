@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>議論更新</title>
+</head>
+<body>
+    <h1>議論更新</h1>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <form method="post">
+        <label for="title">タイトル:</label>
+        <input type="text" id="title" name="title" value={{debate.title}} required><br>
+        <label for="description">説明:</label>
+        <textarea id="description" name="description" required>{{debate.description}}</textarea><br>
+        <input type="submit" value="議論を更新">
+        <a href="{{ url_for('debate.get_debate', debate_id=debate.debate_id) }}">キャンセル</a>
+    </form>
+</body>
+</html>

@@ -1,13 +1,10 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flaskr import models
-
-from . import main
 
 db = SQLAlchemy()
 
-def create_app():
+def create_app(test_config=None):
     """
     Flask アプリケーションを作成
 
@@ -19,6 +16,7 @@ def create_app():
     app.config.from_mapping(
         SQLALCHEMY_DATABASE_URI='sqlite:///database.db',
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        SECRET_KEY='dev',
     )
 
     # インスタンスフォルダが存在しない場合は作成
@@ -29,9 +27,13 @@ def create_app():
 
     # アプリケーションコンテキスト内でテーブルを作成
     with app.app_context():
+        from flaskr import models # モデルをインポートしてテーブルを認識させる
         db.create_all()
 
     # アプリケーションのルートを定義
+    from flaskr import main, debate
+
     app.register_blueprint(main.bp)
+    app.register_blueprint(debate.bp)
 
     return app
