@@ -1,65 +1,9 @@
-<!doctype html>
 <html lang="jp">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sansha - 挑戦管理</title>
-</head>
-
-<body>
-    <h1>Sansha - 挑戦状管理</h1>
-
-
-    <div class="container">
-
-        <!-- 挑戦状参加セクション -->
-        <div>
-            <h2>挑戦状に参加</h2>
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            {% for category, message in messages %}
-            {% if category == 'success' %}
-            <div style="border: 1px solid black; padding: 10px; margin-bottom: 10px; background-color: #d4edda;">
-                <h3>結果</h3>
-                <p>{{ message }}</p>
-            </div>
-            {% else %}
-            <div style="border: 1px solid black; padding: 10px; margin-bottom: 10px; background-color: #f8d7da;">
-                <h3>結果</h3>
-                <p>{{ message }}</p>
-            </div>
-            {% endif %}
-            {% endfor %}
-            {% endif %}
-            {% endwith %}
-
-            <form action="/debates/join" method="POST">
-                <div>
-                    <label for="debate_id">挑戦状ID:</label>
-                    <input type="number" id="debate_id" name="debate_id" placeholder="例: 1" min="1" required>
-                </div>
-
-                <br>
-
-                <div>
-                    <label for="challenger_id">参加者ID:</label>
-                    <input type="number" id="challenger_id" name="challenger_id" placeholder="例: 2" min="1" required>
-                </div>
-
-                <br>
-
-                <button type="submit">参加する</button>
-            </form>
-        </div>
-    </div>
-
-</body>
-
-</html>      </div>
-    </div>
-
-</body>
-
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+        <h1>Test Page</h1>
+    </body>
 </html>

@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
@@ -14,7 +14,7 @@ def create_app():
     """
     app = Flask(__name__)
     app.config.from_mapping(
-        SQLALCHEMY_DATABASE_URI=f"sqlite:///{os.path.join(app.instance_path, 'database.db')}",
+        SQLALCHEMY_DATABASE_URI='sqlite:///database.db',
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SECRET_KEY='dev',  #セッション機能の使用
     )
@@ -29,12 +29,10 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-    # アプリケーションのルートを定義
+    from .main import bp as main_bp
+    app.register_blueprint(main_bp)
+
     from .join_challenge import bp as join_challenge_bp
     app.register_blueprint(join_challenge_bp)
-
-    @app.route('/')
-    def index():
-        return render_template('base.html')
 
     return app

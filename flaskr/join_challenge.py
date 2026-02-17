@@ -2,7 +2,7 @@
 挑戦状への参加機能のサービスロジック
 """
 from datetime import datetime, timezone
-from flask import Blueprint, request, flash, redirect, url_for
+from flask import Blueprint, request, flash, redirect, url_for, render_template
 from flaskr import db
 from flaskr.models.user import User
 from flaskr.models.debate import Debate
@@ -13,9 +13,13 @@ class JoinChallengeError(Exception):
     """挑戦状参加時のエラー"""
     pass
 
-bp = Blueprint('join_challenge', __name__, url_prefix='/debates')
+bp = Blueprint('join_challenge', __name__, url_prefix='/join_challenge')
 
-@bp.route('/join', methods=['POST'])
+@bp.route('/', methods=['GET'])
+def join_form():
+    return render_template('join_challenge.html')
+
+@bp.route('/', methods=['POST'])
 def join_debate_route():
     try:
         # フォームまたはJSONからデータを取得
@@ -23,24 +27,31 @@ def join_debate_route():
         debate_id = data.get('debate_id')
         challenger_id = data.get('challenger_id')
         
-        # IDが文字列で来る可能性があるのでint変換
-        if debate_id:
+        # 必須チェック
+        if not debate_id or not challenger_id:
+            flash("挑戦状IDと参加者IDは必須です", 'error')
+            return redirect(url_for('join_challenge.join_form'))
+        
+        # int変換（不正な値の場合はValueError）
+        try:
             debate_id = int(debate_id)
-        if challenger_id:
             challenger_id = int(challenger_id)
+        except ValueError:
+            flash("IDは数値で入力してください", 'error')
+            return redirect(url_for('join_challenge.join_form'))
             
         result = join_challenge(debate_id, challenger_id)
         
         # フラッシュメッセージを設定してリダイレクト
         flash(result['message'], 'success')
-        return redirect(url_for('index'))
+        return redirect(url_for('join_challenge.join_form'))
         
     except JoinChallengeError as e:
         flash(str(e), 'error')
-        return redirect(url_for('index'))
+        return redirect(url_for('join_challenge.join_form'))
     except Exception as e:
         flash(f"エラー: {str(e)}", 'error')
-        return redirect(url_for('index'))
+        return redirect(url_for('join_challenge.join_form'))
 
 
 
