@@ -30,10 +30,11 @@
     </ul>
 
     <h2>議論の流れ</h2>
+    <div id="exchanges" data-debate-id="{{ debate.debate_id }}">
     {% if debate.exchanges %}
         <ul>
         {% for exchange in debate.exchanges %}
-            <li>
+            <li class="exchange-item">
                 <strong>{{ exchange.sender.username }}</strong>
                 {% if exchange.turn_number is not none %}(ターン {{ exchange.turn_number }}){% endif %}
                 <br>
@@ -46,6 +47,7 @@
     {% else %}
         <p>まだ意見はありません。</p>
     {% endif %}
+    </div>
 
     {% if debate.state == 3 %}
     <h2>結果</h2>
@@ -78,6 +80,7 @@
         <button id="submit-btn" data-debate-id="{{ debate.debate_id }}">投稿</button>
         <p id="result-msg"></p>
         <script src="{{ url_for('static', filename='js/debate_post.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/debate_poll.js') }}"></script>
     {% endif %}
 </body>
 </html>

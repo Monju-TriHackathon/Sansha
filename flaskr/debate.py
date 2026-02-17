@@ -444,3 +444,39 @@ def _judge_outcome(debate):
         return 1
     else:
         return 2
+
+@bp.route('/debates/<int:debate_id>/exchanges', methods=['GET'])
+def get_exchanges(debate_id):
+    """
+    議論のやり取り一覧をJSON形式で返す (ポーリング用API)
+
+    Args:
+        debate_id (int): 議論のID
+
+    Returns:
+        JSON レスポンス (exchanges のリスト, 議論の状態)
+    """
+    debate = db.session.get(Debate, debate_id)
+    if debate is None:
+        return jsonify({'status': 'error', 'message': '議論が見つかりません。'}), 404
+
+    # 状態の更新チェック
+    if _update_debate_state(debate):
+        db.session.commit()
+
+    exchanges = Exchange.query.filter_by(debate_id=debate_id).order_by(Exchange.sent_at.asc()).all()
+
+    return jsonify({
+        'status': 'success',
+        'state': debate.state,
+        'exchanges': [
+            {
+                'exchange_id': e.exchange_id,
+                'sender': e.sender.username,
+                'message': e.message,
+                'sent_at': e.sent_at.isoformat() if e.sent_at else None,
+                'turn_number': e.turn_number,
+            }
+            for e in exchanges
+        ],
+    })
