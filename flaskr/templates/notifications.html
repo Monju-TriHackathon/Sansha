@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>通知一覧</h1>
+    {% if notifications %}
+        {% for notification in notifications %}
+            <div style="padding: 10px; border-bottom: 1px solid #ccc;">
+                <p>{{ notification.message }}</p>
+                <small>{{ notification.created_at.strftime('%Y-%m-%d %H:%M:%S') }} (UTC)</small>
+                {% if not notification.is_read %}
+                    <span style="color: red;">未読</span>
+                {% endif %}
+            </div>
+        {% endfor %}
+        {% if has_next %}
+            <a href="{{ url_for('notification.get_notifications', page=page + 1) }}">もっと見る</a>
+        {% endif %}
+    {% else %}
+        <p>通知はありません</p>
+    {% endif %}
+{% endblock %}

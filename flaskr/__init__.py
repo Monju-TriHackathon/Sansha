@@ -51,4 +51,7 @@ def create_app(test_config=None):
     from flaskr import auth
     app.register_blueprint(auth.bp)
 
+    from flaskr import notification
+    app.register_blueprint(notification.bp)
+
     return app
