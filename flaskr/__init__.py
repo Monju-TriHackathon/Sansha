@@ -56,4 +56,10 @@ def create_app():
     from flaskr import notification
     app.register_blueprint(notification.bp)
 
+    # エラーハンドラー
+    @app.errorhandler(404)
+    def page_not_found(e):
+        from flask import render_template
+        return render_template('404.html'), 404
+
     return app

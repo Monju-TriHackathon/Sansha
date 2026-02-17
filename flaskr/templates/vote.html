@@ -1,55 +1,99 @@
-<!doctype html>
-<html lang="ja">
+{% extends "base.html" %}
+{% block title %}投票: {{ debate.title }} - Sansha{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h2 class="mb-3"><i class="bi bi-hand-thumbs-up me-2"></i>投票</h2>
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
+        {# 議論情報 #}
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">{{ debate.title }}</h5>
+                <p class="card-text">{{ debate.description }}</p>
+                <div class="row text-center">
+                    <div class="col-5">
+                        <div class="card bg-body-secondary">
+                            <div class="card-body py-2">
+                                <small class="text-muted">投稿者</small>
+                                <h6 class="mb-0">
+                                    <a href="{{ url_for('user.get_profile', user_id=debate.poster_id) }}" class="text-decoration-none">{{ debate.poster.username if debate.poster else debate.poster_id }}</a>
+                                </h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-2 d-flex align-items-center justify-content-center">
+                        <span class="fw-bold text-muted">VS</span>
+                    </div>
+                    <div class="col-5">
+                        <div class="card bg-body-secondary">
+                            <div class="card-body py-2">
+                                <small class="text-muted">挑戦者</small>
+                                <h6 class="mb-0">
+                                    {% if debate.challenger %}
+                                    <a href="{{ url_for('user.get_profile', user_id=debate.challenger_id) }}" class="text-decoration-none">{{ debate.challenger.username }}</a>
+                                    {% else %}
+                                    {{ debate.challenger_id }}
+                                    {% endif %}
+                                </h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <span class="text-muted">投票数: {{ debate.current_number_of_votes }} / {{ debate.max_number_of_votes }}</span>
+                </div>
+            </div>
+        </div>
 
-<body>
-  <h2>投票 | {{ debate.title }}</h2>
+        {# 議論を見るリンク #}
+        <div class="mb-4">
+            <a href="{{ url_for('debate.get_debate', debate_id=debate.debate_id) }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-chat-dots me-1"></i>議論の内容を確認する
+            </a>
+        </div>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-  {% for category, message in messages %}
-  <div>
-    <p>{{ message }}</p>
-  </div>
-  {% endfor %}
-  {% endif %}
-  {% endwith %}
+        {# 投票フォーム #}
+        {% if debate.state == 2 %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">投票フォーム</h5>
+                <form action="{{ url_for('vote.submit_vote', debate_id=debate.debate_id) }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">投票先 <span class="text-danger">*</span></label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="voting_destination" id="vote_poster" value="0" required>
+                                <label class="form-check-label" for="vote_poster">
+                                    投稿者（{{ debate.poster.username if debate.poster else debate.poster_id }}）
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="voting_destination" id="vote_challenger" value="1">
+                                <label class="form-check-label" for="vote_challenger">
+                                    挑戦者（{{ debate.challenger.username if debate.challenger else debate.challenger_id }}）
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label fw-semibold">コメント <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="comment" name="comment" rows="4" placeholder="コメントを入力してください" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>投票する
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-secondary">
+            <i class="bi bi-info-circle me-1"></i>この議論は現在投票を受け付けていません。
+        </div>
+        {% endif %}
 
-  <p>{{ debate.description }}</p>
-
-  <p>投稿者: {{ debate.poster.username if debate.poster else debate.poster_id }}</p>
-  <p>挑戦者: {{ debate.challenger.username if debate.challenger else debate.challenger_id }}</p>
-  <p>現在の投票数: {{ debate.current_number_of_votes }} / {{ debate.max_number_of_votes }}</p>
-
-  <h3>投票フォーム</h3>
-  <form action="{{ url_for('vote.submit_vote', debate_id=debate.debate_id) }}" method="POST">
-    <div>
-      <label>投票先:</label>
-      <br>
-      <input type="radio" id="vote_poster" name="voting_destination" value="0" required>
-      <label for="vote_poster">投稿者 ({{ debate.poster.username if debate.poster else debate.poster_id }})</label>
-      <br>
-      <input type="radio" id="vote_challenger" name="voting_destination" value="1">
-      <label for="vote_challenger">挑戦者 ({{ debate.challenger.username if debate.challenger else debate.challenger_id
-        }})</label>
+        <a href="{{ url_for('debate.get_debate', debate_id=debate.debate_id) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>議論に戻る
+        </a>
     </div>
-
-    <br>
-
-    <div>
-      <label for="comment">コメント:</label>
-      <br>
-      <textarea id="comment" name="comment" rows="4" cols="50" placeholder="コメントを入力してください" required></textarea>
-    </div>
-
-    <br>
-
-    <button type="submit">投票する</button>
-  </form>
-</body>
-
-</html>
+</div>
+{% endblock %}

@@ -1,32 +1,38 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>議論更新</title>
-</head>
-<body>
-    <h1>議論更新</h1>
+{% extends "base.html" %}
+{% block title %}編集: {{ debate.title }} - Sansha{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h2 class="mb-4"><i class="bi bi-pencil me-2"></i>議論を編集</h2>
 
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+        <form method="post">
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="title" class="form-label fw-semibold">タイトル <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" value="{{ debate.title }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label fw-semibold">説明 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required>{{ debate.description }}</textarea>
+                    </div>
+                </div>
+            </div>
 
-    <form method="post">
-        <label for="title">タイトル:</label>
-        <input type="text" id="title" name="title" value="{{debate.title}}" required><br>
-        <label for="description">説明:</label>
-        <textarea id="description" name="description" required>{{debate.description}}</textarea><br>
-        <input type="submit" value="議論を更新">
-        <a href="{{ url_for('debate.get_debate', debate_id=debate.debate_id) }}">キャンセル</a>
-    </form>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg me-1"></i>更新
+                </button>
+                <a href="{{ url_for('debate.get_debate', debate_id=debate.debate_id) }}" class="btn btn-outline-secondary">キャンセル</a>
+                <button type="button" class="btn btn-outline-danger ms-auto" id="delete-btn" data-debate-id="{{ debate.debate_id }}">
+                    <i class="bi bi-trash me-1"></i>削除
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
 
-    <button id="delete-btn" data-debate-id="{{ debate.debate_id }}">削除</button>
-    <script src="{{ url_for('static', filename='js/debate_delete.js') }}"></script>
-</body>
-</html>
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/debate_delete.js') }}"></script>
+{% endblock %}
