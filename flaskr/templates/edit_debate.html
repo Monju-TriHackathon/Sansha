@@ -19,11 +19,14 @@
 
     <form method="post">
         <label for="title">タイトル:</label>
-        <input type="text" id="title" name="title" value={{debate.title}} required><br>
+        <input type="text" id="title" name="title" value="{{debate.title}}" required><br>
         <label for="description">説明:</label>
         <textarea id="description" name="description" required>{{debate.description}}</textarea><br>
         <input type="submit" value="議論を更新">
         <a href="{{ url_for('debate.get_debate', debate_id=debate.debate_id) }}">キャンセル</a>
     </form>
+
+    <button id="delete-btn" data-debate-id="{{ debate.debate_id }}">削除</button>
+    <script src="{{ url_for('static', filename='js/debate_delete.js') }}"></script>
 </body>
 </html>

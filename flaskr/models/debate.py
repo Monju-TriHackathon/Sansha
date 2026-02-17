@@ -26,20 +26,20 @@ class Debate(db.Model):
     current_number_of_votes = db.Column(db.Integer, nullable=False, default=0)
 
     # 議論設定
-    method = db.Column(db.Integer, nullable=False, comment='turn(0)/realtime(1)')
-    max_number_of_votes = db.Column(db.Integer, nullable=False)
+    method = db.Column(db.Integer, nullable=False, comment='turn(0)/realtime(1)', default=0)
+    max_number_of_votes = db.Column(db.Integer, nullable=False, default=100)
     max_turns = db.Column(db.Integer, nullable=True)
-    challenger_waiting_period_minutes = db.Column(db.Integer, nullable=False)
-    debate_period_minutes = db.Column(db.Integer, nullable=False)
-    voting_period_minutes = db.Column(db.Integer, nullable=False)
+    challenger_waiting_period_minutes = db.Column(db.Integer, nullable=False, default=2880)
+    debate_period_minutes = db.Column(db.Integer, nullable=False, default=1440)
+    voting_period_minutes = db.Column(db.Integer, nullable=False, default=1440)
     turn_time_limit_minutes = db.Column(db.Integer, nullable=True)
 
     # Relationships
     poster = db.relationship('User', foreign_keys=[poster_id], back_populates='posted_debates')
     challenger = db.relationship('User', foreign_keys=[challenger_id], back_populates='challenged_debates')
-    exchanges = db.relationship('Exchange', back_populates='debate', lazy=True)
-    votes = db.relationship('Vote', back_populates='debate', lazy=True)
-    comments = db.relationship('Comment', back_populates='debate', lazy=True)
+    exchanges = db.relationship('Exchange', back_populates='debate', lazy=True, cascade='all, delete-orphan')
+    votes = db.relationship('Vote', back_populates='debate', lazy=True, cascade='all, delete-orphan')
+    comments = db.relationship('Comment', back_populates='debate', lazy=True, cascade='all, delete-orphan')
     tags = db.relationship('Tag', secondary='debate_tags', back_populates='debates', lazy=True)
 
     # 許可されるソート基準のセット
