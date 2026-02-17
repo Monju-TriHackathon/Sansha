@@ -37,9 +37,9 @@ class Debate(db.Model):
     # Relationships
     poster = db.relationship('User', foreign_keys=[poster_id], back_populates='posted_debates')
     challenger = db.relationship('User', foreign_keys=[challenger_id], back_populates='challenged_debates')
-    exchanges = db.relationship('Exchange', back_populates='debate', lazy=True)
-    votes = db.relationship('Vote', back_populates='debate', lazy=True)
-    comments = db.relationship('Comment', back_populates='debate', lazy=True)
+    exchanges = db.relationship('Exchange', back_populates='debate', lazy=True, cascade='all, delete-orphan')
+    votes = db.relationship('Vote', back_populates='debate', lazy=True, cascade='all, delete-orphan')
+    comments = db.relationship('Comment', back_populates='debate', lazy=True, cascade='all, delete-orphan')
     tags = db.relationship('Tag', secondary='debate_tags', back_populates='debates', lazy=True)
 
     # 許可されるソート基準のセット
