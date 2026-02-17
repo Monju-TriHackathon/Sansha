@@ -1,11 +1,13 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flaskr import models
+from flask_login import LoginManager
 
-from . import main
 
 db = SQLAlchemy()
+login_manager = LoginManager()
+login_manager.login_view = 'auth.login'
+login_manager.login_message = 'ログインが必要です'
 
 def create_app():
     """
@@ -19,6 +21,7 @@ def create_app():
     app.config.from_mapping(
         SQLALCHEMY_DATABASE_URI='sqlite:///database.db',
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        SECRET_KEY='dev',
     )
 
     # インスタンスフォルダが存在しない場合は作成
@@ -27,11 +30,24 @@ def create_app():
     # データベースの初期化
     db.init_app(app)
 
+    # Flask-Loginの初期化
+    login_manager.init_app(app)
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        from flaskr.models.user import User
+        return User.query.get(int(user_id))
+
     # アプリケーションコンテキスト内でテーブルを作成
     with app.app_context():
+        from flaskr import models
         db.create_all()
 
     # アプリケーションのルートを定義
+    from flaskr import main
     app.register_blueprint(main.bp)
+
+    from flaskr import auth
+    app.register_blueprint(auth.bp)
 
     return app

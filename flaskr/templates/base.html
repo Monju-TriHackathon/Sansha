@@ -5,6 +5,15 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body>
-        <h1>Test Page</h1>
+        <nav style="display: flex; justify-content: space-between; align-items: center; padding: 10px;">
+            <h1>Test Page</h1>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('auth.logout') }}" style="padding: 8px 16px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 4px;">ログアウト</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" style="padding: 8px 16px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">ログイン</a>
+            {% endif %}
+        </nav>
+        {% block header %}{% endblock %}
+        {% block content %}{% endblock %}
     </body>
 </html>
