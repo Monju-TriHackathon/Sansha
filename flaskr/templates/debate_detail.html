@@ -17,6 +17,8 @@
         {% endif %}
     {% endwith %}
 
+    <br>
+
     <ul>
         <li>{{ debate.title }}<li>
         <li>{{ debate.description }}<li>
@@ -26,5 +28,56 @@
         <li>{{ debate.created_at }}<li>
         <li>{{ debate.updated_at }}<li>
     </ul>
+
+    <h2>議論の流れ</h2>
+    {% if debate.exchanges %}
+        <ul>
+        {% for exchange in debate.exchanges %}
+            <li>
+                <strong>{{ exchange.sender.username }}</strong>
+                {% if exchange.turn_number is not none %}(ターン {{ exchange.turn_number }}){% endif %}
+                <br>
+                {{ exchange.message }}
+                <br>
+                <small>{{ exchange.sent_at }}</small>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>まだ意見はありません。</p>
+    {% endif %}
+
+    {% if debate.state == 3 %}
+    <h2>結果</h2>
+    <ul>
+        <li>勝者:
+            {% if debate.outcome == 0 %}
+                {{ debate.poster.username }} (投稿者)
+            {% elif debate.outcome == 1 %}
+                {{ debate.challenger.username }} (挑戦者)
+            {% elif debate.outcome == 2 %}
+                引き分け
+            {% endif %}
+        </li>
+        <li>終了理由:
+            {% if debate.finish_reason == 0 %}
+                通常終了
+            {% elif debate.finish_reason == 1 %}
+                挑戦者不参加
+            {% elif debate.finish_reason == 2 %}
+                相手の発言時間超過
+            {% endif %}
+        </li>
+    </ul>
+    {% endif %}
+
+    {% if debate.state == 1 %}
+        <h2>意見を投稿</h2>
+        <textarea id="message" rows="5" cols="60" placeholder="意見を入力..."></textarea>
+        <br>
+        <button id="submit-btn" data-debate-id="{{ debate.debate_id }}">投稿</button>
+        <p id="result-msg"></p>
+        <script src="{{ url_for('static', filename='js/debate_post.js') }}"></script>
+    {% endif %}
 </body>
 </html>

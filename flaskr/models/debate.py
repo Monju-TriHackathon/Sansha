@@ -26,12 +26,12 @@ class Debate(db.Model):
     current_number_of_votes = db.Column(db.Integer, nullable=False, default=0)
 
     # 議論設定
-    method = db.Column(db.Integer, nullable=False, comment='turn(0)/realtime(1)')
-    max_number_of_votes = db.Column(db.Integer, nullable=False)
+    method = db.Column(db.Integer, nullable=False, comment='turn(0)/realtime(1)', default=0)
+    max_number_of_votes = db.Column(db.Integer, nullable=False, default=100)
     max_turns = db.Column(db.Integer, nullable=True)
-    challenger_waiting_period_minutes = db.Column(db.Integer, nullable=False)
-    debate_period_minutes = db.Column(db.Integer, nullable=False)
-    voting_period_minutes = db.Column(db.Integer, nullable=False)
+    challenger_waiting_period_minutes = db.Column(db.Integer, nullable=False, default=2880)
+    debate_period_minutes = db.Column(db.Integer, nullable=False, default=1440)
+    voting_period_minutes = db.Column(db.Integer, nullable=False, default=1440)
     turn_time_limit_minutes = db.Column(db.Integer, nullable=True)
 
     # Relationships
