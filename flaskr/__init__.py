@@ -53,4 +53,7 @@ def create_app():
     app.register_blueprint(join_challenge.bp)
     app.register_blueprint(user.bp)
 
+    from flaskr import notification
+    app.register_blueprint(notification.bp)
+
     return app
