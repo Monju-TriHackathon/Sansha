@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, jsonify
 from flask_login import login_required, current_user
 from flaskr.models.notification import Notification
 from flaskr import db
@@ -46,3 +46,44 @@ def get_notifications():
         page=page,
         has_next=has_next
     )
+
+
+@bp.route('/api/recent')
+@login_required
+def api_recent():
+    """ナビバー通知ポップアップ用: 最新通知と未読数を JSON で返す"""
+    notifications = Notification.query.filter_by(
+        user_id=current_user.user_id
+    ).order_by(
+        Notification.created_at.desc()
+    ).limit(10).all()
+
+    unread_count = Notification.query.filter_by(
+        user_id=current_user.user_id,
+        is_read=False
+    ).count()
+
+    return jsonify({
+        'unread_count': unread_count,
+        'notifications': [
+            {
+                'notification_id': n.notification_id,
+                'message': n.message,
+                'is_read': n.is_read,
+                'created_at': n.created_at.strftime('%Y-%m-%d %H:%M'),
+            }
+            for n in notifications
+        ],
+    })
+
+
+@bp.route('/api/mark_read', methods=['POST'])
+@login_required
+def api_mark_read():
+    """ログイン中ユーザーの未読通知をすべて既読にする"""
+    Notification.query.filter_by(
+        user_id=current_user.user_id,
+        is_read=False
+    ).update({'is_read': True})
+    db.session.commit()
+    return jsonify({'status': 'ok'})

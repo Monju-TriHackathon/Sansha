@@ -1,17 +1,41 @@
-<!doctype html>
-<html lang="jp">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-    </head>
-    <body>
-        <h1>Log In</h1>
-        <form method="post">
-            <label for="username">ユーザー名</label>
-            <input name="username" id="username" required>
-            <label for="password">パスワード</label>
-            <input type="password" name="password" id="password" required>
-            <input type="submit" value="ログイン">
-        </form>
-    </body>
-</html>
+{% extends "base.html" %}
+{% block title %}ログイン - Sansha{% endblock %}
+{% block content %}
+<div class="row align-items-center g-5" style="min-height:75vh;">
+    {# 左: サービス紹介 #}
+    <div class="col-lg-6">
+        <h1 class="display-5 fw-bold mb-3"><i class="bi bi-chat-square-text me-2"></i>Sansha</h1>
+        <p class="lead text-muted mb-4">三者の視点で議論を深めるディベートプラットフォーム</p>
+        <ul class="list-unstyled fs-5 mb-0">
+            <li class="mb-3"><i class="bi bi-megaphone text-primary me-2"></i>議題を投稿して議論を始める</li>
+            <li class="mb-3"><i class="bi bi-lightning text-warning me-2"></i>挑戦状を選んで議論に参加</li>
+            <li><i class="bi bi-hand-thumbs-up text-success me-2"></i>第三者の投票で勝敗が決まる</li>
+        </ul>
+    </div>
+
+    {# 右: ログインフォーム #}
+    <div class="col-lg-5 offset-lg-1">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="card-title text-center mb-4">ログイン</h4>
+                <form method="post" action="{{ url_for('auth.login') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">ユーザー名</label>
+                        <input type="text" class="form-control" name="username" id="username" required autofocus>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">パスワード</label>
+                        <input type="password" class="form-control" name="password" id="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">ログイン</button>
+                </form>
+                <hr>
+                <p class="text-center mb-0">
+                    アカウントをお持ちでない方は
+                    <a href="{{ url_for('auth.register') }}">新規登録</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

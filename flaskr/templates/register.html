@@ -1,19 +1,33 @@
-<!doctype html>
-<html lang="jp">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-    </head>
-    <body>
-        <h1>Register</h1>
-        <form method="post">
-            <label for="username">ユーザー名</label>
-            <input name="username" id="username" required>
-            <label for="mailaddress">メールアドレス</label>
-            <input type="email" name="mailaddress" id="mailaddress" required>
-            <label for="password">パスワード</label>
-            <input type="password" name="password" id="password" required>
-            <input type="submit" value="登録">
-        </form>
-    </body>
-</html>
+{% extends "base.html" %}
+{% block title %}新規登録 - Sansha{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="card-title text-center mb-4">アカウント登録</h4>
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">ユーザー名</label>
+                        <input type="text" class="form-control" name="username" id="username" required autofocus>
+                    </div>
+                    <div class="mb-3">
+                        <label for="mailaddress" class="form-label">メールアドレス</label>
+                        <input type="email" class="form-control" name="mailaddress" id="mailaddress" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">パスワード</label>
+                        <input type="password" class="form-control" name="password" id="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">登録</button>
+                </form>
+                <hr>
+                <p class="text-center mb-0">
+                    既にアカウントをお持ちの方は
+                    <a href="{{ url_for('auth.login') }}">ログイン</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

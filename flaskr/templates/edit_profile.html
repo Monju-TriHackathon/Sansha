@@ -1,25 +1,39 @@
-<!doctype html>
-<html lang="jp">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-    </head>
-    <body>
-        <h2>プロフィール編集</h2>
-        <form method="post">
-            <label for="username">ユーザー名</label>
-            <input name="username" id="username" value="{{ user.username }}" required>
+{% extends "base.html" %}
+{% block title %}アカウント設定 - Sansha{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <h2 class="mb-4"><i class="bi bi-gear me-2"></i>アカウント設定</h2>
 
-            <label for="mailaddress">メールアドレス</label>
-            <input type="email" name="mailaddress" id="mailaddress" value="{{ user.mailaddress }}" required>
-
-            <label for="profile">プロフィール</label>
-            <textarea name="profile" id="profile">{{ user.profile or '' }}</textarea>
-
-            <label for="password">新しいパスワード（変更する場合のみ）</label>
-            <input type="password" name="password" id="password">
-
-            <input type="submit" value="更新">
-        </form>
-    </body>
-</html>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold">ユーザー名 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="username" id="username" value="{{ user.username }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="mailaddress" class="form-label fw-semibold">メールアドレス <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" name="mailaddress" id="mailaddress" value="{{ user.mailaddress }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="profile" class="form-label fw-semibold">プロフィール</label>
+                        <textarea class="form-control" name="profile" id="profile" rows="3">{{ user.profile or '' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label fw-semibold">新しいパスワード</label>
+                        <input type="password" class="form-control" name="password" id="password" placeholder="変更する場合のみ入力">
+                        <div class="form-text">空欄の場合、パスワードは変更されません。</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>更新
+                        </button>
+                        <a href="{{ url_for('user.get_profile', user_id=user.user_id) }}" class="btn btn-outline-secondary">キャンセル</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

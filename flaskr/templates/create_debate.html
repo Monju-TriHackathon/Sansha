@@ -1,67 +1,93 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>議論作成</title>
-</head>
-<body>
-    <h1>議論作成</h1>
+{% extends "base.html" %}
+{% block title %}議論作成 - Sansha{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h2 class="mb-4"><i class="bi bi-plus-circle me-2"></i>議論作成</h2>
 
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-
-    <form method="post">
-        <label for="title">タイトル:</label>
-        <input type="text" id="title" name="title" required><br>
-
-        <label for="description">説明:</label>
-        <textarea id="description" name="description" required></textarea><br>
-
-        <fieldset>
-            <legend>詳細設定</legend>
-
-            <label for="method">議論方式:</label>
-            <select id="method" name="method">
-                <option value="0" selected>ターン制</option>
-                <option value="1">リアルタイム制</option>
-            </select><br>
-
-            <label for="max_number_of_votes">最大投票数:</label>
-            <input type="number" id="max_number_of_votes" name="max_number_of_votes" value="100" min="1"><br>
-
-            <label for="challenger_waiting_period_minutes">挑戦者待機期間 (分):</label>
-            <input type="number" id="challenger_waiting_period_minutes" name="challenger_waiting_period_minutes" value="2880" min="1"><br>
-
-            <label for="debate_period_minutes">議論期間 (分):</label>
-            <input type="number" id="debate_period_minutes" name="debate_period_minutes" value="1440" min="1"><br>
-
-            <label for="voting_period_minutes">投票期間 (分):</label>
-            <input type="number" id="voting_period_minutes" name="voting_period_minutes" value="1440" min="1"><br>
-
-            <div id="turn-settings">
-                <label for="max_turns">最大ターン数:</label>
-                <input type="number" id="max_turns" name="max_turns" value="10" min="1"><br>
-
-                <label for="turn_time_limit_minutes">ターン時間制限 (分):</label>
-                <input type="number" id="turn_time_limit_minutes" name="turn_time_limit_minutes" value="30" min="1"><br>
+        <form method="post">
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="title" class="form-label fw-semibold">タイトル <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" required placeholder="議論のタイトルを入力">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label fw-semibold">説明（あなたの意見） <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required placeholder="議論の内容や、あなたの立場を記述してください"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="method" class="form-label fw-semibold">議論方式</label>
+                        <select class="form-select" id="method" name="method">
+                            <option value="0" selected>ターン制</option>
+                            <option value="1">リアルタイム制</option>
+                        </select>
+                        <div class="form-text">ターン制: 交互に発言 / リアルタイム制: 自由に発言</div>
+                    </div>
+                </div>
             </div>
-        </fieldset>
 
-        <input type="submit" value="議論を作成">
-    </form>
+            {# 詳細設定（折りたたみ） #}
+            <div class="mb-3">
+                <a class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" href="#advancedSettings">
+                    <i class="bi bi-gear me-1"></i>詳細設定（Advanced）
+                </a>
+            </div>
+            <div class="collapse" id="advancedSettings">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="max_number_of_votes" class="form-label">最大投票数</label>
+                                <input type="number" class="form-control" id="max_number_of_votes" name="max_number_of_votes" value="100" min="1">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="challenger_waiting_period_minutes" class="form-label">挑戦者待機期間（分）</label>
+                                <input type="number" class="form-control" id="challenger_waiting_period_minutes" name="challenger_waiting_period_minutes" value="2880" min="1">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="debate_period_minutes" class="form-label">議論期間（分）</label>
+                                <input type="number" class="form-control" id="debate_period_minutes" name="debate_period_minutes" value="1440" min="1">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="voting_period_minutes" class="form-label">投票期間（分）</label>
+                                <input type="number" class="form-control" id="voting_period_minutes" name="voting_period_minutes" value="1440" min="1">
+                            </div>
+                        </div>
 
-    <script>
-        document.getElementById('method').addEventListener('change', function() {
-            var turnSettings = document.getElementById('turn-settings');
-            turnSettings.style.display = this.value === '0' ? '' : 'none';
-        });
-    </script>
-</body>
-</html>
+                        <div id="turn-settings" class="mt-3">
+                            <hr>
+                            <h6 class="text-muted">ターン制設定</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="max_turns" class="form-label">最大ターン数</label>
+                                    <input type="number" class="form-control" id="max_turns" name="max_turns" value="10" min="1">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="turn_time_limit_minutes" class="form-label">ターン時間制限（分）</label>
+                                    <input type="number" class="form-control" id="turn_time_limit_minutes" name="turn_time_limit_minutes" value="30" min="1">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg me-1"></i>議論を作成
+                </button>
+                <a href="{{ url_for('debate.get_debates') }}" class="btn btn-outline-secondary">キャンセル</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('method').addEventListener('change', function() {
+        document.getElementById('turn-settings').style.display = this.value === '0' ? '' : 'none';
+    });
+</script>
+{% endblock %}

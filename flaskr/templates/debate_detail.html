@@ -1,86 +1,184 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>議論 | {{ debate.title }}</title>
-</head>
-<body>
-    <h1>議論 | {{ debate.title }}</h1>
-
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-
-    <br>
-
-    <ul>
-        <li>{{ debate.title }}</li>
-        <li>{{ debate.description }}</li>
-        <li>{{ debate.state }}</li>
-        <li>{{ debate.poster_id }}</li>
-        <li>{{ debate.challenger_id }}</li>
-        <li>{{ debate.created_at }}</li>
-        <li>{{ debate.updated_at }}</li>
-    </ul>
-
-    <h2>議論の流れ</h2>
-    <div id="exchanges" data-debate-id="{{ debate.debate_id }}">
-    {% if debate.exchanges %}
-        <ul>
-        {% for exchange in debate.exchanges %}
-            <li class="exchange-item">
-                <strong>{{ exchange.sender.username }}</strong>
-                {% if exchange.turn_number is not none %}(ターン {{ exchange.turn_number }}){% endif %}
-                <br>
-                {{ exchange.message }}
-                <br>
-                <small>{{ exchange.sent_at }}</small>
-            </li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>まだ意見はありません。</p>
-    {% endif %}
+{% extends "base.html" %}
+{% block title %}{{ debate.title }} - Sansha{% endblock %}
+{% block content %}
+{# ヘッダー #}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h2 class="mb-1">{{ debate.title }}</h2>
+        <div class="text-muted small">
+            <i class="bi bi-person me-1"></i>
+            <a href="{{ url_for('user.get_profile', user_id=debate.poster_id) }}" class="text-decoration-none">{{ debate.poster.username }}</a>
+            {% if debate.challenger %}
+            <span class="mx-1">vs</span>
+            <a href="{{ url_for('user.get_profile', user_id=debate.challenger_id) }}" class="text-decoration-none">{{ debate.challenger.username }}</a>
+            {% endif %}
+            <span class="mx-2">|</span>
+            <i class="bi bi-clock me-1"></i>{{ debate.created_at.strftime('%Y-%m-%d %H:%M') }}
+            <span class="mx-2">|</span>
+            {% if debate.method == 0 %}
+            <i class="bi bi-arrow-repeat me-1"></i>ターン制
+            {% else %}
+            <i class="bi bi-lightning me-1"></i>リアルタイム制
+            {% endif %}
+        </div>
     </div>
+    <div class="d-flex align-items-center gap-2">
+        {% if debate.state == 0 %}
+        <span class="badge bg-success fs-6">募集中</span>
+        {% elif debate.state == 1 %}
+        <span class="badge bg-primary fs-6">議論中</span>
+        {% elif debate.state == 2 %}
+        <span class="badge bg-warning text-dark fs-6">投票中</span>
+        {% elif debate.state == 3 %}
+        <span class="badge bg-secondary fs-6">終了</span>
+        {% endif %}
+    </div>
+</div>
 
-    {% if debate.state == 3 %}
-    <h2>結果</h2>
-    <ul>
-        <li>勝者:
-            {% if debate.outcome == 0 %}
-                {{ debate.poster.username }} (投稿者)
-            {% elif debate.outcome == 1 %}
-                {{ debate.challenger.username }} (挑戦者)
-            {% elif debate.outcome == 2 %}
-                引き分け
-            {% endif %}
-        </li>
-        <li>終了理由:
-            {% if debate.finish_reason == 0 %}
-                通常終了
-            {% elif debate.finish_reason == 1 %}
-                挑戦者不参加
-            {% elif debate.finish_reason == 2 %}
-                相手の発言時間超過
-            {% endif %}
-        </li>
-    </ul>
-    {% endif %}
+{# 説明 #}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h6 class="card-subtitle mb-2 text-muted">議題の説明（投稿者の意見）</h6>
+        <p class="card-text">{{ debate.description }}</p>
+    </div>
+</div>
 
-    {% if debate.state == 1 %}
-        <h2>意見を投稿</h2>
-        <textarea id="message" rows="5" cols="60" placeholder="意見を入力..."></textarea>
-        <br>
-        <button id="submit-btn" data-debate-id="{{ debate.debate_id }}">投稿</button>
-        <p id="result-msg"></p>
-        <script src="{{ url_for('static', filename='js/debate_post.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/debate_poll.js') }}"></script>
+{# アクションボタン #}
+<div class="d-flex gap-2 mb-4 flex-wrap">
+    {% if debate.state == 0 and current_user.is_authenticated %}
+        {% if current_user.user_id == debate.poster_id %}
+        <a href="{{ url_for('debate.edit_debate', debate_id=debate.debate_id) }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-pencil me-1"></i>編集
+        </a>
+        {% elif debate.challenger_id is none %}
+        <form action="{{ url_for('join_challenge.join_debate_route') }}" method="POST">
+            <input type="hidden" name="debate_id" value="{{ debate.debate_id }}">
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="bi bi-lightning me-1"></i>この議論に参加する
+            </button>
+        </form>
+        {% endif %}
     {% endif %}
-</body>
-</html>
+    {% if debate.state == 2 and current_user.is_authenticated and current_user.user_id != debate.poster_id and current_user.user_id != debate.challenger_id %}
+    <a href="{{ url_for('vote.vote_form', debate_id=debate.debate_id) }}" class="btn btn-warning btn-sm">
+        <i class="bi bi-hand-thumbs-up me-1"></i>投票する
+    </a>
+    {% endif %}
+</div>
+
+{# 結果（終了時） #}
+{% if debate.state == 3 %}
+<div class="card shadow-sm mb-4 border-{{ 'success' if debate.outcome in [0, 1] else 'secondary' }}">
+    <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-trophy me-2"></i>結果</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <strong>勝者:</strong>
+                {% if debate.outcome == 0 %}
+                    <span class="text-success">{{ debate.poster.username }}（投稿者）</span>
+                {% elif debate.outcome == 1 %}
+                    <span class="text-success">{{ debate.challenger.username }}（挑戦者）</span>
+                {% elif debate.outcome == 2 %}
+                    <span class="text-muted">引き分け</span>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                <strong>終了理由:</strong>
+                {% if debate.finish_reason == 0 %}
+                    通常終了
+                {% elif debate.finish_reason == 1 %}
+                    挑戦者不参加
+                {% elif debate.finish_reason == 2 %}
+                    発言時間超過
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# 議論の流れ #}
+<div class="card shadow-sm mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-chat-dots me-2"></i>議論の流れ</h5>
+        {% if debate.method == 0 and debate.state == 1 %}
+        <span class="text-muted small" id="turn-indicator">ターン {{ debate.current_turn or 1 }} / {{ debate.max_turns or '∞' }}</span>
+        {% endif %}
+    </div>
+    <div class="card-body" id="exchanges" data-debate-id="{{ debate.debate_id }}">
+        {% if debate.exchanges %}
+        {% for exchange in debate.exchanges %}
+        <div class="d-flex mb-3 exchange-item {% if exchange.sender_id == debate.poster_id %}{% else %}flex-row-reverse{% endif %}">
+            <div class="card {% if exchange.sender_id == debate.poster_id %}bg-body-secondary{% else %}bg-primary-subtle{% endif %}" style="max-width:75%;">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <strong class="small">
+                            <a href="{{ url_for('user.get_profile', user_id=exchange.sender_id) }}" class="text-decoration-none">{{ exchange.sender.username }}</a>
+                        </strong>
+                        {% if exchange.turn_number is not none %}
+                        <span class="badge bg-body-tertiary text-body-emphasis ms-2">ターン {{ exchange.turn_number }}</span>
+                        {% endif %}
+                    </div>
+                    <p class="mb-1">{{ exchange.message }}</p>
+                    <small class="text-muted">{{ exchange.sent_at.strftime('%Y-%m-%d %H:%M') if exchange.sent_at else '' }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="text-muted text-center mb-0">まだ意見はありません。</p>
+        {% endif %}
+    </div>
+</div>
+
+{# 意見投稿フォーム（議論中のみ） #}
+{% if debate.state == 1 and current_user.is_authenticated and (current_user.user_id == debate.poster_id or current_user.user_id == debate.challenger_id) %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-pencil-square me-2"></i>意見を投稿</h5>
+        <textarea class="form-control mb-2" id="message" rows="4" placeholder="意見を入力..."></textarea>
+        <div class="d-flex justify-content-between align-items-center">
+            <p class="mb-0 small" id="result-msg"></p>
+            <button class="btn btn-primary" id="submit-btn" data-debate-id="{{ debate.debate_id }}">
+                <i class="bi bi-send me-1"></i>投稿
+            </button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# 投票情報（投票中・終了時） #}
+{% if debate.state in [2, 3] %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>投票状況</h5>
+    </div>
+    <div class="card-body">
+        <p>投票数: {{ debate.current_number_of_votes }} / {{ debate.max_number_of_votes }}</p>
+        {% if debate.comments %}
+        <h6>コメント</h6>
+        {% for comment in debate.comments %}
+        <div class="border-bottom py-2">
+            <strong class="small">
+                <a href="{{ url_for('user.get_profile', user_id=comment.poster_id) }}" class="text-decoration-none">{{ comment.poster.username }}</a>
+            </strong>
+            <p class="mb-1">{{ comment.comment }}</p>
+            <small class="text-muted">{{ comment.posted_at.strftime('%Y-%m-%d %H:%M') }}</small>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<a href="{{ url_for('debate.get_debates') }}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>一覧に戻る
+</a>
+{% endblock %}
+
+{% block scripts %}
+{% if debate.state == 1 %}
+<script src="{{ url_for('static', filename='js/debate_post.js') }}"></script>
+<script src="{{ url_for('static', filename='js/debate_poll.js') }}"></script>
+{% endif %}
+{% endblock %}
