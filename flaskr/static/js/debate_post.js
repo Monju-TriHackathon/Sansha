@@ -13,8 +13,7 @@ document.getElementById('submit-btn').addEventListener('click', function() {
     .then(function(data) {
         resultMsg.textContent = data.message;
         if (data.status === 'success') {
-            // 成功したらページをリロードして最新状態を表示
-            location.reload();
+            document.getElementById('message').value = '';
         }
     })
     .catch(function() {
