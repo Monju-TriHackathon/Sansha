@@ -283,7 +283,7 @@ def post_opinion(debate_id):
             debate_id=debate_id,
             sender_id=sender_id,
             message=message,
-            turn_number=debate.current_turn if debate.method == 1 else None,
+            turn_number=debate.current_turn if debate.method == 0 else None,
         )
         db.session.add(exchange)
 
