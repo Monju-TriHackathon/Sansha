@@ -2,12 +2,14 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from dotenv import load_dotenv
 
 
 db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 login_manager.login_message = 'ログインが必要です'
+load_dotenv()
 
 def create_app():
     """
@@ -21,7 +23,7 @@ def create_app():
     app.config.from_mapping(
         SQLALCHEMY_DATABASE_URI='sqlite:///database.db',
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        SECRET_KEY='dev',
+        SECRET_KEY=os.getenv('SECRET_KEY'),
     )
 
     # インスタンスフォルダが存在しない場合は作成
