@@ -469,10 +469,12 @@ def get_exchanges(debate_id):
     return jsonify({
         'status': 'success',
         'state': debate.state,
+        'poster_id': debate.poster_id,
         'exchanges': [
             {
                 'exchange_id': e.exchange_id,
                 'sender': e.sender.username,
+                'sender_id': e.sender_id,
                 'message': e.message,
                 'sent_at': e.sent_at.isoformat() if e.sent_at else None,
                 'turn_number': e.turn_number,

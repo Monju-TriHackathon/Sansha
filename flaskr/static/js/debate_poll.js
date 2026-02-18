@@ -4,22 +4,57 @@
     var debateId = container.dataset.debateId;
     var knownCount = container.querySelectorAll('.exchange-item').length;
 
-    function renderExchange(ex) {
-        var li = document.createElement('li');
-        li.className = 'exchange-item';
+    function formatDateTime(isoString) {
+        if (!isoString) return '';
+        var d = new Date(isoString);
+        var pad = function(n) { return n < 10 ? '0' + n : n; };
+        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    }
+
+    function renderExchange(ex, posterId) {
+        var isPoster = ex.sender_id === posterId;
+        var wrapper = document.createElement('div');
+        wrapper.className = 'd-flex mb-3 exchange-item' + (isPoster ? '' : ' flex-row-reverse');
+
+        var card = document.createElement('div');
+        card.className = 'card ' + (isPoster ? 'bg-body-secondary' : 'bg-primary-subtle');
+        card.style.maxWidth = '75%';
+
+        var cardBody = document.createElement('div');
+        cardBody.className = 'card-body py-2 px-3';
+
+        var header = document.createElement('div');
+        header.className = 'd-flex justify-content-between align-items-center mb-1';
         var strong = document.createElement('strong');
-        strong.textContent = ex.sender;
-        li.appendChild(strong);
+        strong.className = 'small';
+        var link = document.createElement('a');
+        link.href = '/user/' + ex.sender_id;
+        link.className = 'text-decoration-none';
+        link.textContent = ex.sender;
+        strong.appendChild(link);
+        header.appendChild(strong);
+
         if (ex.turn_number !== null && ex.turn_number !== undefined) {
-            li.appendChild(document.createTextNode(' (ターン ' + ex.turn_number + ')'));
+            var badge = document.createElement('span');
+            badge.className = 'badge bg-body-tertiary text-body-emphasis ms-2';
+            badge.textContent = 'ターン ' + ex.turn_number;
+            header.appendChild(badge);
         }
-        li.appendChild(document.createElement('br'));
-        li.appendChild(document.createTextNode(ex.message));
-        li.appendChild(document.createElement('br'));
+
+        var msgP = document.createElement('p');
+        msgP.className = 'mb-1';
+        msgP.textContent = ex.message;
+
         var small = document.createElement('small');
-        small.textContent = ex.sent_at || '';
-        li.appendChild(small);
-        return li;
+        small.className = 'text-muted';
+        small.textContent = formatDateTime(ex.sent_at);
+
+        cardBody.appendChild(header);
+        cardBody.appendChild(msgP);
+        cardBody.appendChild(small);
+        card.appendChild(cardBody);
+        wrapper.appendChild(card);
+        return wrapper;
     }
 
     function poll() {
@@ -34,14 +69,13 @@
                     container.innerHTML = '';
                     if (data.exchanges.length === 0) {
                         var p = document.createElement('p');
+                        p.className = 'text-muted text-center mb-0';
                         p.textContent = 'まだ意見はありません。';
                         container.appendChild(p);
                     } else {
-                        var ul = document.createElement('ul');
                         data.exchanges.forEach(function(ex) {
-                            ul.appendChild(renderExchange(ex));
+                            container.appendChild(renderExchange(ex, data.poster_id));
                         });
-                        container.appendChild(ul);
                     }
                     knownCount = data.exchanges.length;
                 }
