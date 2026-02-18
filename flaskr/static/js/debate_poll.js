@@ -80,6 +80,12 @@
                     knownCount = data.exchanges.length;
                 }
 
+                // ターン表示を更新
+                var turnIndicator = document.getElementById('turn-indicator');
+                if (turnIndicator && data.method === 0) {
+                    turnIndicator.textContent = 'ターン ' + (data.current_turn || 1) + ' / ' + (data.max_turns || '∞');
+                }
+
                 // 議論が終了・投票に移行した場合はリロード
                 if (data.state !== 1) {
                     location.reload();

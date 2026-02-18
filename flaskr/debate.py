@@ -470,6 +470,9 @@ def get_exchanges(debate_id):
         'status': 'success',
         'state': debate.state,
         'poster_id': debate.poster_id,
+        'method': debate.method,
+        'current_turn': debate.current_turn,
+        'max_turns': debate.max_turns,
         'exchanges': [
             {
                 'exchange_id': e.exchange_id,
